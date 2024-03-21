@@ -1,7 +1,7 @@
 class Solution {
 public:
     int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
-        unordered_set<string> dict(wordList.begin(), wordList.end());
+        unordered_set<string> dict(wordList.begin(), wordList.end()), head, tail, *phead, *ptail;
         queue<string> q;
         q.push(beginWord);
 
@@ -10,34 +10,51 @@ public:
             return 0;
         }
 
-        int ladder = 1;
-        while(!q.empty()){
-            int n = q.size();
+        // storing beginning and ending
+        head.insert(beginWord);
+        tail.insert(endWord);
+        int ladder = 2;
 
-            for(int i = 0; i < n; i ++){
-                string word = q.front();
-                q.pop();
+        // running bfs
+        while(!head.empty() && !tail.empty()){
 
-                // checking if it reached the endWord
-                if(word == endWord){
-                    return ladder;
-                }
+            if(head.size() < tail.size()){
+                phead = &head; // set 1 is the forward set 
+                ptail = &tail; // set 2 is the target node for set1 to search
+            }
 
-                // checking every combination by changing one character 
-                for(int j = 0; j < word.size(); j ++){
-                    char c = word[j];
-                    for(int k = 0; k < 26; k ++){
-                        word[j] = 'a' + k;
-                        if(dict.find(word) != dict.end()){
-                            q.push(word);
-                            dict.erase(word);
+            else{
+                phead = &tail;
+                ptail = &head;
+            }
+
+            unordered_set<string> temp;
+            for(auto it = phead -> begin() ; it != phead -> end(); it ++){
+                string word = *it;
+
+                // trying different combination 
+                for(int i = 0; i < word.size(); i ++){
+                    char c = word[i];
+
+                    for(int j = 0 ; j < 26; j ++){
+                        word[i] = 'a' + j;
+
+                        if(ptail -> find(word) != ptail -> end()){
+                            return ladder;
                         }
+
+                        if(dict.find(word) != dict.end()){
+                            temp.insert(word);
+                            dict.erase(word);
+                        }    
+                        
                     }
-                    word[j] = c;
+                    word[i] = c;
                 }
             }
 
             ladder++;
+            phead -> swap(temp);
         }
         return 0;
     }
